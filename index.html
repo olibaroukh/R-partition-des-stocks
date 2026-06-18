@@ -284,8 +284,8 @@ details.card[open] summary::before{content:'▾ ';}
     </details>
     <div class="card">
       <div class="dropzone" id="dropzone">
-        <input type="file" id="fileInput" accept=".csv">
-        <div class="hint">Format attendu : Famille, Code Produit, Marque, Fournisseur, Libellé, Taille, Couleur, [codes magasins...], TOTAL</div>
+        <input type="file" id="fileInput" accept=".csv" multiple>
+        <div class="hint">Format attendu : Famille, Code Produit, Marque, Fournisseur, Libellé, Taille, Couleur, [codes magasins...], TOTAL — tu peux sélectionner plusieurs fichiers à la fois (par exemple un export par marque), ils seront combinés en un seul calcul.</div>
       </div>
       <div id="importSummary"></div>
     </div>
@@ -918,36 +918,58 @@ function parseCosiumCSV(text){
   return {storeCodes: storeCols.map(s=>s.code), rows};
 }
 
+function readFileAsText(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ev => resolve(decodeFileBuffer(ev.target.result));
+    reader.onerror = () => reject(new Error(`Impossible de lire le fichier ${file.name}`));
+    reader.readAsArrayBuffer(file);
+  });
+}
+function mergeParsedFiles(parsedList){
+  const storeCodes = [];
+  const seen = new Set();
+  parsedList.forEach(p=>{
+    p.storeCodes.forEach(c=>{ if(!seen.has(c)){ seen.add(c); storeCodes.push(c); } });
+  });
+  const rows = [];
+  parsedList.forEach(p=> rows.push(...p.rows));
+  return {storeCodes, rows};
+}
 const fileInput = document.getElementById('fileInput');
-fileInput.addEventListener('change', (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev){
-    try{
-      const text = decodeFileBuffer(ev.target.result);
-      const parsed = parseCosiumCSV(text);
-      IMPORT_DATA = parsed;
-      renderImportSummary(file.name, parsed);
-    }catch(err){
-      document.getElementById('importSummary').innerHTML =
-        `<div class="alert-box alert-red" style="margin-top:14px;">⚠️ ${escapeHtml(err.message)}</div>`;
-      document.getElementById('calcCard').style.display = 'none';
-    }
-  };
-  reader.readAsArrayBuffer(file);
+fileInput.addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  try{
+    const texts = await Promise.all(files.map(readFileAsText));
+    const parsedList = texts.map((text, i)=>{
+      try{ return parseCosiumCSV(text); }
+      catch(err){ throw new Error(`${files[i].name} : ${err.message}`); }
+    });
+    const merged = mergeParsedFiles(parsedList);
+    IMPORT_DATA = merged;
+    renderImportSummary(files.map(f=>f.name), merged);
+  }catch(err){
+    document.getElementById('importSummary').innerHTML =
+      `<div class="alert-box alert-red" style="margin-top:14px;">⚠️ ${escapeHtml(err.message)}</div>`;
+    document.getElementById('calcCard').style.display = 'none';
+  }
 });
-function renderImportSummary(fileName, parsed){
+function renderImportSummary(fileNames, parsed){
   const knownStores = parsed.storeCodes.filter(c=>magasinByCode(c));
   const unknownStores = parsed.storeCodes.filter(c=>!magasinByCode(c));
+  const countByCode = {};
+  parsed.rows.forEach(r=>{ countByCode[r.codeProduit] = (countByCode[r.codeProduit]||0)+1; });
+  const duplicates = Object.keys(countByCode).filter(c=>countByCode[c]>1);
   document.getElementById('importSummary').innerHTML = `
     <div class="summary-grid">
       <div class="summary-pill"><div class="num">${parsed.rows.length}</div><div class="lbl">Références</div></div>
       <div class="summary-pill"><div class="num">${parsed.storeCodes.length}</div><div class="lbl">Magasins détectés</div></div>
       <div class="summary-pill"><div class="num">${unknownStores.length}</div><div class="lbl">Magasins non configurés</div></div>
     </div>
-    <p class="hint" style="margin-top:10px;">${escapeHtml(fileName)} — codes magasins : ${parsed.storeCodes.map(c=>escapeHtml(c)).join(', ')}</p>
+    <p class="hint" style="margin-top:10px;">${fileNames.map(escapeHtml).join(' + ')} — codes magasins : ${parsed.storeCodes.map(c=>escapeHtml(c)).join(', ')}</p>
     ${unknownStores.length ? `<div class="alert-box alert-amber" style="margin-top:10px;">⚠️ Codes magasins absents de Paramètres &gt; Magasins : ${unknownStores.map(escapeHtml).join(', ')}. Le calcul fonctionnera quand même, mais pense à les configurer pour générer leurs emails.</div>` : ''}
+    ${duplicates.length ? `<div class="alert-box alert-amber" style="margin-top:10px;">⚠️ ${duplicates.length} code(s) produit apparaissent plusieurs fois entre les fichiers importés (vérifie qu'il n'y a pas un export en double) : ${duplicates.slice(0,15).map(escapeHtml).join(', ')}${duplicates.length>15?'…':''}.</div>` : ''}
   `;
   document.getElementById('calcCard').style.display = 'block';
 }

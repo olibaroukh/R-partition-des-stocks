@@ -328,8 +328,10 @@ details.card[open] summary::before{content:'▾ ';}
       <input type="password" id="zimbraPassword" autocomplete="off" style="width:280px;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;margin-bottom:12px;">
       <div class="row-actions">
         <button class="btn btn-primary" id="btnTestZimbra">Tester la connexion</button>
+        <button class="btn" id="btnSendAllZimbra">Envoyer tous les emails maintenant</button>
       </div>
       <div id="zimbraTestResult" style="margin-top:12px;"></div>
+      <div id="zimbraSendResult" style="margin-top:12px;"></div>
     </details>
     <div id="emailsContent"><div class="empty-state">Lance d'abord un calcul de répartition.</div></div>
   </div>
@@ -1280,18 +1282,12 @@ function buildBrandGroupedRows(items){
   });
   return body;
 }
-function generatePdfForStore(storeCode, direction){
-  if(!window.jspdf || !window.jspdf.jsPDF){
-    showToast('Librairie PDF non chargée — vérifie la connexion internet et réessaie.');
-    return;
-  }
+function buildPdfDoc(storeCode, direction){
+  if(!window.jspdf || !window.jspdf.jsPDF) return null;
   const list = direction==='envoi'
     ? RESULT.transferts.filter(t=>t.depuis===storeCode)
     : RESULT.transferts.filter(t=>t.vers===storeCode);
-  if(!list.length){
-    showToast('Aucun transfert dans ce sens pour ce magasin.');
-    return;
-  }
+  if(!list.length) return null;
   const store = magasinByCode(storeCode);
   const nom = store && store.nom ? store.nom : storeCode;
   const now = new Date();
@@ -1395,7 +1391,20 @@ function generatePdfForStore(storeCode, direction){
 
   const safeNom = nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_');
   const safeDate = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
-  doc.save(`${direction==='envoi'?'a_expedier':'a_recevoir'}_${storeCode}_${safeNom}_${safeDate}.pdf`);
+  const filename = `${direction==='envoi'?'a_expedier':'a_recevoir'}_${storeCode}_${safeNom}_${safeDate}.pdf`;
+  return {doc, filename};
+}
+function generatePdfForStore(storeCode, direction){
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    showToast('Librairie PDF non chargée — vérifie la connexion internet et réessaie.');
+    return;
+  }
+  const built = buildPdfDoc(storeCode, direction);
+  if(!built){
+    showToast('Aucun transfert dans ce sens pour ce magasin.');
+    return;
+  }
+  built.doc.save(built.filename);
 }
 function mailtoLink(to, subject, body){
   return `mailto:${to||''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1476,6 +1485,7 @@ function initZimbraConfigUI(){
   inpRelay.addEventListener('input', ()=>{ PARAMS.zimbraConfig.relayUrl = inpRelay.value.trim(); saveParams(); });
 
   document.getElementById('btnTestZimbra').addEventListener('click', testZimbraConnection);
+  document.getElementById('btnSendAllZimbra').addEventListener('click', sendAllEmailsViaZimbra);
 }
 async function zimbraAuth(serverUrl, login, password, relayUrl){
   const endpoint = relayUrl
@@ -1529,8 +1539,119 @@ async function testZimbraConnection(){
   }
   document.getElementById('zimbraPassword').value = '';
 }
+async function zimbraUploadAttachment(relayUrl, token, blob, filename){
+  const fd = new FormData();
+  fd.append('file', blob, filename);
+  const res = await fetch(relayUrl.replace(/\/+$/,'') + '/upload?fmt=raw', {
+    method:'POST',
+    headers:{'X-Zimbra-Auth-Token': token},
+    body: fd
+  });
+  const text = await res.text();
+  const m = text.match(/^\s*(\d+)\s*,\s*'([^']*)'\s*,\s*'([^']*)'/);
+  if(!m || m[1] !== '200') throw new Error(`Échec de l'envoi du PDF au serveur : ${text.slice(0,200)}`);
+  return m[3]; // aid
+}
+async function zimbraSendMsg(relayUrl, token, {to, subject, bodyText, aid}){
+  const m = {
+    su:{_content:subject},
+    e:[{a:to, t:'t'}],
+    mp:{ct:'text/plain', content:{_content:bodyText}}
+  };
+  if(aid) m.attach = {aid};
+  const res = await fetch(relayUrl.replace(/\/+$/,'') + '/soap', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      Header:{context:{_jsns:'urn:zimbra', authToken:{_content:token}}},
+      Body:{SendMsgRequest:{_jsns:'urn:zimbraMail', m}}
+    })
+  });
+  const text = await res.text();
+  let data;
+  try{ data = JSON.parse(text); }catch(e){ throw new Error(`Réponse inattendue à l'envoi (statut ${res.status}) : ${text.slice(0,200)}`); }
+  if(data.Body && data.Body.Fault){
+    const reason = data.Body.Fault.Reason && data.Body.Fault.Reason.Text ? data.Body.Fault.Reason.Text : 'Échec inconnu';
+    throw new Error(reason);
+  }
+}
+async function sendAllEmailsViaZimbra(){
+  const resultEl = document.getElementById('zimbraSendResult');
+  const serverUrl = document.getElementById('zimbraServerUrl').value.trim();
+  const login = document.getElementById('zimbraLogin').value.trim();
+  const relayUrl = document.getElementById('zimbraRelayUrl').value.trim();
+  const password = document.getElementById('zimbraPassword').value;
 
-/* ======================= PARAMS: SAUVEGARDE ======================= */
+  if(!RESULT || !RESULT.transferts || !RESULT.transferts.length){
+    resultEl.innerHTML = `<div class="alert-box alert-amber">⚠️ Lance d'abord un calcul de répartition (onglet Import &amp; calcul).</div>`;
+    return;
+  }
+  if(!serverUrl || !login || !password){
+    resultEl.innerHTML = `<div class="alert-box alert-amber">⚠️ Renseigne l'adresse du serveur, l'identifiant et le mot de passe.</div>`;
+    return;
+  }
+  if(window.location.protocol === 'file:'){
+    resultEl.innerHTML = `<div class="alert-box alert-amber">⚠️ Ouvre la page publiée en ligne (pas un fichier local) avant d'envoyer.</div>`;
+    document.getElementById('zimbraPassword').value = '';
+    return;
+  }
+
+  // construit la liste des envois à faire : un par (magasin, sens) avec au moins 1 référence et un email connu
+  const jobs = [];
+  RESULT.storeCodes.slice().sort((a,b)=>magasinPriority(a)-magasinPriority(b)).forEach(code=>{
+    const data = buildEmailsForStore(code, RESULT.transferts);
+    if(!data.email){
+      jobs.push({code, nom:data.nom, direction:null, skipped:'Pas d\u2019adresse email renseignée pour ce magasin'});
+      return;
+    }
+    if(data.reception.count > 0) jobs.push({code, nom:data.nom, direction:'reception', email:data.email, subject:data.reception.subject, body:data.reception.body});
+    if(data.envoi.count > 0) jobs.push({code, nom:data.nom, direction:'envoi', email:data.email, subject:data.envoi.subject, body:data.envoi.body});
+  });
+
+  const realJobs = jobs.filter(j=>j.direction);
+  if(!realJobs.length){
+    resultEl.innerHTML = `<div class="alert-box alert-amber">⚠️ Rien à envoyer (aucun transfert, ou aucune adresse email renseignée dans Paramètres &gt; Magasins).</div>`;
+    document.getElementById('zimbraPassword').value = '';
+    return;
+  }
+  if(!confirm(`Envoyer ${realJobs.length} email(s) automatiquement (un par magasin et par sens, PDF joint) ? Cette action est irréversible.`)){
+    return;
+  }
+
+  resultEl.innerHTML = `<div class="hint">Connexion...</div>`;
+  let token;
+  try{
+    token = await zimbraAuth(serverUrl, login, password, relayUrl);
+  }catch(err){
+    resultEl.innerHTML = `<div class="alert-box alert-red">⛔ Connexion impossible : ${escapeHtml(err.message)}</div>`;
+    document.getElementById('zimbraPassword').value = '';
+    return;
+  }
+
+  const results = jobs.filter(j=>j.skipped).map(j=>`⚠️ ${j.nom} — ${j.skipped}`);
+  let done = 0;
+  for(const job of realJobs){
+    done++;
+    resultEl.innerHTML = `<div class="hint">Envoi ${done}/${realJobs.length} — ${escapeHtml(job.nom)} (${job.direction === 'envoi' ? 'envoi' : 'réception'})...</div>`;
+    try{
+      const built = buildPdfDoc(job.code, job.direction);
+      let aid = null;
+      if(built){
+        const blob = built.doc.output('blob');
+        aid = await zimbraUploadAttachment(relayUrl, token, blob, built.filename);
+      }
+      await zimbraSendMsg(relayUrl, token, {to:job.email, subject:job.subject, bodyText:job.body, aid});
+      results.push(`✅ ${job.nom} — ${job.direction === 'envoi' ? 'Envoi' : 'Réception'}`);
+    }catch(err){
+      results.push(`⛔ ${job.nom} — ${job.direction === 'envoi' ? 'Envoi' : 'Réception'} : ${err.message}`);
+    }
+  }
+
+  document.getElementById('zimbraPassword').value = '';
+  resultEl.innerHTML = `<div class="alert-box" style="border-color:rgba(63,163,77,0.4);background:rgba(63,163,77,0.08);color:#9FE3AC;">
+    <strong>Terminé.</strong><br>${results.map(r=>escapeHtml(r)).join('<br>')}
+  </div>`;
+}
 function renderBackup(){
   const el = document.getElementById('subtab-backup');
   el.innerHTML = `

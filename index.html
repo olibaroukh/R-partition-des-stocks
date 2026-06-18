@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Répartition Stocks — Optical Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3/dist/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --bg:#0D0D0D;
+  --bg-panel:#151515;
+  --bg-card:#1B1B1B;
+  --bg-input:#101010;
+  --border:#2A2A2A;
+  --border-soft:#222222;
+  --red:#CC1719;
+  --red-bright:#E8232A;
+  --cream:#F0EDE6;
+  --text-dim:#8F8C87;
+  --text-dimmer:#666460;
+  --green:#3FA34D;
+  --amber:#D9A33E;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--cream);
+  font-family:'Barlow',-apple-system,Segoe UI,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  min-height:100vh;
+}
+header.app-head{
+  padding:22px 24px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+  flex-wrap:wrap;
+}
+header.app-head .brand-mark{
+  width:10px;height:10px;border-radius:2px;background:var(--red);
+  display:inline-block;margin-right:2px;
+}
+header.app-head h1{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:22px;
+  letter-spacing:0.3px;
+  margin:0;
+  text-transform:uppercase;
+}
+header.app-head .sub{
+  color:var(--text-dim);
+  font-size:13px;
+}
+nav.tabs{
+  display:flex;
+  gap:6px;
+  padding:14px 24px 0;
+  flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+}
+nav.tabs button{
+  background:transparent;
+  border:none;
+  color:var(--text-dim);
+  font-family:'Barlow',sans-serif;
+  font-weight:600;
+  font-size:13.5px;
+  letter-spacing:0.2px;
+  padding:10px 16px;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:color .15s, border-color .15s;
+  text-transform:uppercase;
+}
+nav.tabs button:hover{color:var(--cream);}
+nav.tabs button.active{color:var(--cream);border-bottom-color:var(--red);}
+nav.subtabs{
+  display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap;
+}
+nav.subtabs button{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  color:var(--text-dim);
+  font-family:'Barlow',sans-serif;
+  font-weight:600;
+  font-size:12.5px;
+  padding:7px 14px;
+  border-radius:999px;
+  cursor:pointer;
+}
+nav.subtabs button.active{
+  color:var(--cream);
+  border-color:var(--red);
+  background:rgba(204,23,25,0.12);
+}
+main{padding:22px 24px 60px;max-width:1280px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.subtab-content{display:none;}
+.subtab-content.active{display:block;}
+h2.section-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:18px;
+  text-transform:uppercase;
+  letter-spacing:0.3px;
+  margin:0 0 4px;
+}
+p.section-desc{color:var(--text-dim);font-size:13.5px;margin:0 0 18px;max-width:760px;}
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  margin-bottom:18px;
+}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;
+}
+.card-head h3{font-size:14.5px;margin:0;font-weight:600;}
+.btn{
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  color:var(--cream);
+  font-family:'Barlow',sans-serif;
+  font-weight:600;
+  font-size:12.5px;
+  padding:8px 14px;
+  border-radius:7px;
+  cursor:pointer;
+  transition:border-color .15s, background .15s;
+}
+.btn:hover{border-color:var(--text-dim);}
+.btn-primary{background:var(--red);border-color:var(--red);}
+.btn-primary:hover{background:var(--red-bright);border-color:var(--red-bright);}
+.btn-ghost{background:transparent;}
+.btn-sm{padding:5px 10px;font-size:11.5px;}
+.btn-danger{color:#E8232A;}
+table.data-table{
+  width:100%;border-collapse:collapse;font-size:13px;
+}
+table.data-table th{
+  text-align:left;color:var(--text-dim);font-weight:600;font-size:11.5px;
+  text-transform:uppercase;letter-spacing:0.3px;
+  padding:8px 8px;border-bottom:1px solid var(--border);white-space:nowrap;
+}
+table.data-table td{
+  padding:5px 8px;border-bottom:1px solid var(--border-soft);vertical-align:middle;
+}
+table.data-table tr:hover td{background:rgba(255,255,255,0.02);}
+table.data-table input, table.data-table select{
+  width:100%;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);
+  font-family:'Barlow',sans-serif;font-size:12.5px;padding:5px 7px;border-radius:5px;
+}
+table.data-table input:focus, table.data-table select:focus{outline:none;border-color:var(--red);}
+.col-narrow{width:60px;}
+.col-mid{width:110px;}
+.empty-state{
+  color:var(--text-dimmer);font-size:13px;padding:20px 4px;text-align:center;
+}
+textarea.paste-area{
+  width:100%;min-height:110px;background:var(--bg-input);border:1px solid var(--border);
+  color:var(--cream);font-family:ui-monospace,monospace;font-size:12px;border-radius:7px;padding:10px;
+  resize:vertical;
+}
+.paste-box{display:none;margin-top:12px;}
+.paste-box.open{display:block;}
+.hint{color:var(--text-dimmer);font-size:11.5px;margin-top:6px;}
+.alert-box{
+  border-radius:var(--radius);padding:12px 16px;margin-bottom:10px;font-size:13px;
+  border:1px solid;display:flex;gap:10px;align-items:flex-start;
+}
+.alert-amber{background:rgba(217,163,62,0.08);border-color:rgba(217,163,62,0.4);color:#E8C97A;}
+.alert-red{background:rgba(204,23,25,0.08);border-color:rgba(204,23,25,0.4);color:#F2A0A1;}
+.badge{
+  display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;
+  padding:2px 7px;border-radius:5px;letter-spacing:0.3px;
+}
+.badge-optique{background:rgba(63,163,77,0.15);color:var(--green);}
+.badge-solaire{background:rgba(217,163,62,0.15);color:var(--amber);}
+input[type=file]{color:var(--text-dim);font-size:12.5px;}
+.dropzone{
+  border:1.5px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;
+  color:var(--text-dim);font-size:13px;
+}
+.summary-grid{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;}
+.summary-pill{
+  background:var(--bg-input);border:1px solid var(--border);border-radius:8px;
+  padding:10px 16px;min-width:130px;
+}
+.summary-pill .num{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;}
+.summary-pill .lbl{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.3px;}
+.store-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:16px;overflow:hidden;
+}
+.store-card .store-head{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
+.store-head h3{margin:0;font-size:15px;}
+.store-head .meta{color:var(--text-dim);font-size:12px;}
+.email-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+@media (max-width:760px){.email-grid{grid-template-columns:1fr;}}
+.email-col{padding:16px 18px;border-right:1px solid var(--border);}
+.email-col:last-child{border-right:none;}
+.email-col h4{
+  margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:var(--text-dim);
+}
+.email-col textarea{
+  width:100%;min-height:160px;background:var(--bg-input);border:1px solid var(--border);
+  color:var(--cream);font-size:12.5px;font-family:'Barlow',sans-serif;border-radius:7px;padding:10px;
+  resize:vertical;margin-bottom:8px;
+}
+.email-actions{display:flex;gap:8px;}
+.toast{
+  position:fixed;bottom:22px;right:22px;background:var(--bg-card);border:1px solid var(--red);
+  color:var(--cream);padding:11px 18px;border-radius:8px;font-size:13px;font-weight:600;
+  box-shadow:0 6px 24px rgba(0,0,0,0.5);opacity:0;transform:translateY(8px);
+  transition:opacity .2s, transform .2s;pointer-events:none;z-index:999;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+.row-actions{display:flex;gap:4px;}
+::-webkit-scrollbar{height:8px;width:8px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.guide p, .guide li{color:var(--cream);font-size:13.5px;}
+.guide h3{font-size:14px;margin:18px 0 6px;}
+.guide ul{padding-left:20px;}
+details.card summary{list-style:none;color:var(--cream);}
+details.card summary::-webkit-details-marker{display:none;}
+details.card summary::before{content:'▸ ';color:var(--red);}
+details.card[open] summary::before{content:'▾ ';}
+.proj-group{margin-bottom:18px;}
+.proj-group:last-child{margin-bottom:0;}
+.proj-group-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:600;font-size:13px;}
+.proj-chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.proj-chip{background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:7px 11px;min-width:108px;}
+.proj-chip-store{font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:2px;white-space:nowrap;}
+.proj-chip-value{font-size:13px;font-weight:600;color:var(--text-dimmer);}
+.proj-chip-changed{border-color:var(--red);}
+.proj-chip-changed .proj-chip-value{color:var(--cream);}
+</style>
+</head>
+<body>
+
+<header class="app-head">
+  <span class="brand-mark"></span>
+  <h1>Répartition Stocks</h1>
+  <span class="sub">Optical Center — équilibrage des surstocks entre magasins</span>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="import">Import &amp; calcul</button>
+  <button class="tab-btn" data-tab="results">Résultats</button>
+  <button class="tab-btn" data-tab="emails">Emails</button>
+  <button class="tab-btn" data-tab="params">Paramètres</button>
+  <button class="tab-btn" data-tab="guide">Mode d'emploi</button>
+</nav>
+
+<main>
+
+  <!-- IMPORT TAB -->
+  <div class="tab-content active" id="tab-import">
+    <h2 class="section-title">1. Importer l'export Cosium</h2>
+    <p class="section-desc">Dépose le fichier CSV exporté (montures, solaires, peu importe — le filtre se fait à l'export). Les colonnes magasins sont détectées automatiquement, leur nombre peut varier.</p>
+    <details class="card">
+      <summary style="cursor:pointer;font-weight:600;font-size:13.5px;">Comment obtenir ce fichier depuis Cosium ?</summary>
+      <ol style="margin:12px 0 0;padding-left:20px;color:var(--cream);font-size:13.5px;line-height:1.7;">
+        <li>Aller dans <strong>Stock/SAV</strong></li>
+        <li><strong>Rechercher</strong> &gt; <strong>Article</strong></li>
+        <li>Choisir la ou les marques concernées</li>
+        <li>Sélectionner les sites</li>
+        <li>Cliquer sur <strong>Stock</strong></li>
+      </ol>
+    </details>
+    <div class="card">
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept=".csv">
+        <div class="hint">Format attendu : Famille, Code Produit, Marque, Fournisseur, Libellé, Taille, Couleur, [codes magasins...], TOTAL</div>
+      </div>
+      <div id="importSummary"></div>
+    </div>
+    <div class="card" id="calcCard" style="display:none;">
+      <div class="card-head">
+        <h3>2. Calculer la répartition</h3>
+        <button class="btn btn-primary" id="btnCompute">Calculer la répartition</button>
+      </div>
+      <p class="section-desc" style="margin-bottom:0;">Le calcul applique le seuil par référence et le stock minimum par marque/type définis dans Paramètres. Résultat dans l'onglet "Résultats".</p>
+    </div>
+  </div>
+
+  <!-- RESULTS TAB -->
+  <div class="tab-content" id="tab-results">
+    <h2 class="section-title">Résultats de la répartition</h2>
+    <p class="section-desc">Liste des transferts proposés entre magasins, et alertes à vérifier.</p>
+    <div id="resultsContent"><div class="empty-state">Aucun calcul effectué pour l'instant. Lance un calcul depuis l'onglet "Import &amp; calcul".</div></div>
+  </div>
+
+  <!-- EMAILS TAB -->
+  <div class="tab-content" id="tab-emails">
+    <h2 class="section-title">Emails par magasin</h2>
+    <p class="section-desc">Pour chaque magasin concerné : un email "Réception" (ce qu'il va recevoir) et un email "Envoi" (ce qu'il doit expédier). Copie le texte ou ouvre directement ta messagerie.</p>
+    <details class="card" id="zimbraConfigCard">
+      <summary style="cursor:pointer;font-weight:600;font-size:13.5px;">Envoi automatique depuis Zimbra (en test)</summary>
+      <p class="section-desc" style="margin:12px 0 14px;">Étape 1 : on vérifie simplement que la connexion à ton serveur Zimbra fonctionne depuis cette page, avant de construire l'envoi automatique complet. Ton mot de passe n'est jamais sauvegardé ni envoyé ailleurs qu'à ton serveur Zimbra — il est ressaisi à chaque utilisation. Si tu as la double authentification activée sur ton compte, utilise un "code d'application" (Préférences &gt; Comptes &gt; Applications dans Zimbra) plutôt que ton mot de passe habituel.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <p class="hint" style="margin:0 0 4px;">Adresse du serveur Zimbra</p>
+          <input type="text" id="zimbraServerUrl" placeholder="https://mail.optical-center.com" style="width:100%;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;">
+        </div>
+        <div>
+          <p class="hint" style="margin:0 0 4px;">Adresse de connexion</p>
+          <input type="text" id="zimbraLogin" placeholder="prenom.nom@optical-center.com" style="width:100%;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;">
+        </div>
+      </div>
+      <p class="hint" style="margin:0 0 4px;">Mot de passe (ou code d'application)</p>
+      <input type="password" id="zimbraPassword" autocomplete="off" style="width:280px;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;margin-bottom:12px;">
+      <div class="row-actions">
+        <button class="btn btn-primary" id="btnTestZimbra">Tester la connexion</button>
+      </div>
+      <div id="zimbraTestResult" style="margin-top:12px;"></div>
+    </details>
+    <div id="emailsContent"><div class="empty-state">Lance d'abord un calcul de répartition.</div></div>
+  </div>
+
+  <!-- PARAMS TAB -->
+  <div class="tab-content" id="tab-params">
+    <h2 class="section-title">Paramètres</h2>
+    <p class="section-desc">Ces données sont sauvegardées dans ton navigateur. Pense à exporter une sauvegarde JSON régulièrement.</p>
+    <nav class="subtabs">
+      <button class="subtab-btn active" data-subtab="magasins">Magasins</button>
+      <button class="subtab-btn" data-subtab="marques">Marques</button>
+      <button class="subtab-btn" data-subtab="minstock">Stock mini</button>
+      <button class="subtab-btn" data-subtab="emailtpl">Modèles d'emails</button>
+      <button class="subtab-btn" data-subtab="backup">Sauvegarde</button>
+    </nav>
+    <div class="subtab-content active" id="subtab-magasins"></div>
+    <div class="subtab-content" id="subtab-marques"></div>
+    <div class="subtab-content" id="subtab-minstock"></div>
+    <div class="subtab-content" id="subtab-emailtpl"></div>
+    <div class="subtab-content" id="subtab-backup"></div>
+  </div>
+
+  <!-- GUIDE TAB -->
+  <div class="tab-content guide" id="tab-guide"></div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================= STATE ======================= */
+const STORAGE_KEY = 'rs_params_v1';
+const DEFAULT_EMAIL_TEMPLATES = {
+  reception: {
+    subject: 'Réception transferts stock — {{magasin}} — {{date}}',
+    body: 'Bonjour,\n\nVous avez {{nombre}} référence(s) à recevoir suite à la répartition de stock du {{date}}. Le détail est dans le PDF joint.\n\nMerci de bien vouloir les réceptionner et les ranger en linéaire dès leur arrivée.\n\nBien cordialement.'
+  },
+  envoi: {
+    subject: 'Envoi transferts stock — {{magasin}} — {{date}}',
+    body: 'Bonjour,\n\nVous avez {{nombre}} référence(s) à préparer et expédier suite à la répartition de stock du {{date}}. Le détail est dans le PDF joint.\n\nMerci de bien vouloir les conditionner et les envoyer dès que possible.\n\nBien cordialement.'
+  }
+};
+let PARAMS = { magasins: [], marques: [], minstock: [] };
+let IMPORT_DATA = null;
+let RESULT = null;
+
+function loadParams(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) PARAMS = JSON.parse(raw);
+  }catch(e){ console.error(e); }
+  normalizeParams();
+}
+function normalizeParams(){
+  if(!PARAMS.magasins) PARAMS.magasins = [];
+  if(!PARAMS.marques) PARAMS.marques = [];
+  if(!PARAMS.minstock) PARAMS.minstock = [];
+  if(!PARAMS.zimbraConfig) PARAMS.zimbraConfig = {serverUrl:'https://zimbra.oc-pratique.com', login:''};
+  if(!PARAMS.emailTemplates) PARAMS.emailTemplates = {};
+  ['reception','envoi'].forEach(d=>{
+    if(!PARAMS.emailTemplates[d]) PARAMS.emailTemplates[d] = {};
+    if(typeof PARAMS.emailTemplates[d].subject !== 'string') PARAMS.emailTemplates[d].subject = DEFAULT_EMAIL_TEMPLATES[d].subject;
+    if(typeof PARAMS.emailTemplates[d].body !== 'string') PARAMS.emailTemplates[d].body = DEFAULT_EMAIL_TEMPLATES[d].body;
+  });
+}
+function saveParams(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(PARAMS));
+}
+function applyEmailTemplate(tpl, vars){
+  return (tpl||'').replace(/\{\{\s*(\w+)\s*\}\}/g, (m, key)=> (vars[key]!==undefined ? String(vars[key]) : m));
+}
+
+/* ======================= UTILS ======================= */
+function escapeHtml(s){
+  return (s===undefined||s===null?'':String(s))
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function normMarque(s){ return (s||'').toString().trim().toLowerCase(); }
+function normalizeHeaderLabel(s){
+  return (s||'').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ======================= TAB NAV ======================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+document.querySelectorAll('.subtab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.subtab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.subtab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('subtab-'+btn.dataset.subtab).classList.add('active');
+  });
+});
+
+/* ======================= PARAMS: MAGASINS ======================= */
+const MAGASIN_FIELDS = [
+  {key:'code', label:'Code', width:'col-mid'},
+  {key:'nom', label:'Magasin'},
+  {key:'email', label:'Email'},
+  {key:'adresse', label:'Adresse'},
+  {key:'ordre', label:'Priorité', width:'col-narrow'},
+  {key:'manager', label:'Manager'},
+  {key:'respMonture', label:'Resp. monture'},
+  {key:'respContacto', label:'Resp. contacto'},
+  {key:'respAudio', label:'Resp. audio'},
+  {key:'respVerres', label:'Resp. verres'}
+];
+function emptyMagasin(){
+  return {code:'',nom:'',email:'',adresse:'',ordre:'',manager:'',respMonture:'',respContacto:'',respAudio:'',respVerres:''};
+}
+function renderMagasins(){
+  const el = document.getElementById('subtab-magasins');
+  const rows = PARAMS.magasins;
+  let theadCells = MAGASIN_FIELDS.map(f=>`<th>${escapeHtml(f.label)}</th>`).join('') + '<th></th>';
+  let bodyRows = rows.map((m,idx)=>{
+    let cells = MAGASIN_FIELDS.map(f=>{
+      return `<td class="${f.width||''}"><input type="text" data-table="magasins" data-idx="${idx}" data-field="${f.key}" value="${escapeHtml(m[f.key])}"></td>`;
+    }).join('');
+    return `<tr>${cells}<td class="row-actions"><button class="btn btn-sm btn-danger" data-action="del-magasin" data-idx="${idx}">Suppr.</button></td></tr>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Magasins configurés (${rows.length})</h3>
+        <div class="row-actions">
+          <button class="btn btn-sm" id="btnPasteMagasins">Coller depuis Sheets</button>
+          <button class="btn btn-sm btn-primary" id="btnAddMagasin">+ Ajouter une ligne</button>
+        </div>
+      </div>
+      <div class="paste-box" id="pasteBoxMagasins">
+        <textarea class="paste-area" id="pasteAreaMagasins" placeholder="Colle ici les colonnes Code, Magasin, Email, Adresse, Ordre copiées depuis Google Sheets (avec ou sans ligne d'en-tête)."></textarea>
+        <div class="row-actions" style="margin-top:8px;">
+          <button class="btn btn-sm btn-primary" id="btnImportMagasins">Importer</button>
+          <button class="btn btn-sm btn-ghost" id="btnCancelPasteMagasins">Annuler</button>
+        </div>
+        <div class="hint">Colonnes attendues, dans l'ordre : Code · Magasin · Email · Adresse · Ordre. Une ligne déjà existante (même code) sera mise à jour.</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr>${theadCells}</tr></thead>
+          <tbody>${bodyRows || ''}</tbody>
+        </table>
+        ${rows.length===0 ? '<div class="empty-state">Aucun magasin configuré. Ajoute une ligne ou colle tes données depuis Sheets.</div>' : ''}
+      </div>
+    </div>`;
+
+  el.querySelector('#btnAddMagasin').addEventListener('click', ()=>{
+    PARAMS.magasins.push(emptyMagasin());
+    saveParams(); renderMagasins();
+  });
+  el.querySelector('#btnPasteMagasins').addEventListener('click', ()=>{
+    el.querySelector('#pasteBoxMagasins').classList.add('open');
+  });
+  el.querySelector('#btnCancelPasteMagasins').addEventListener('click', ()=>{
+    el.querySelector('#pasteBoxMagasins').classList.remove('open');
+  });
+  el.querySelector('#btnImportMagasins').addEventListener('click', ()=>{
+    const text = el.querySelector('#pasteAreaMagasins').value;
+    const res = importMagasinsFromPaste(text);
+    showToast(`${res.added} ajouté(s), ${res.updated} mis à jour`);
+    renderMagasins();
+  });
+  el.querySelectorAll('input[data-table="magasins"]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const idx = Number(inp.dataset.idx);
+      PARAMS.magasins[idx][inp.dataset.field] = inp.value;
+      saveParams();
+    });
+  });
+  el.querySelectorAll('[data-action="del-magasin"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = Number(btn.dataset.idx);
+      if(!confirm(`Supprimer le magasin "${PARAMS.magasins[idx].nom || PARAMS.magasins[idx].code}" ?`)) return;
+      PARAMS.magasins.splice(idx,1);
+      saveParams(); renderMagasins();
+    });
+  });
+}
+function parsePastedTable(text){
+  return text.split(/\r\n|\n|\r/).filter(l=>l.trim()!=='').map(l=>l.split('\t').map(c=>c.trim()));
+}
+function importMagasinsFromPaste(text){
+  const rows = parsePastedTable(text);
+  let start = 0;
+  if(rows.length && normalizeHeaderLabel(rows[0][0])==='code') start = 1;
+  let added=0, updated=0;
+  for(let i=start;i<rows.length;i++){
+    const [code, nom, email, adresse, ordre] = rows[i];
+    if(!code) continue;
+    const codeTrim = code.trim();
+    const existingIdx = PARAMS.magasins.findIndex(m=>m.code===codeTrim);
+    const base = existingIdx>=0 ? PARAMS.magasins[existingIdx] : emptyMagasin();
+    const obj = Object.assign({}, base, {
+      code: codeTrim,
+      nom: (nom||'').trim(),
+      email: (email||'').trim(),
+      adresse: (adresse||'').trim(),
+      ordre: ordre ? (Number(ordre)||ordre.trim()) : ''
+    });
+    if(existingIdx>=0){ PARAMS.magasins[existingIdx]=obj; updated++; }
+    else { PARAMS.magasins.push(obj); added++; }
+  }
+  saveParams();
+  return {added, updated};
+}
+function magasinPriority(code){
+  const m = PARAMS.magasins.find(x=>x.code===code);
+  if(!m || m.ordre===undefined || m.ordre===null || m.ordre==='') return 9999;
+  const v = Number(m.ordre);
+  return Number.isFinite(v) ? v : 9999;
+}
+function magasinByCode(code){
+  return PARAMS.magasins.find(x=>x.code===code) || null;
+}
+
+/* ======================= PARAMS: MARQUES ======================= */
+function emptyMarque(){ return {sousMarque:'', createur:'', type:'Optique'}; }
+function renderMarques(){
+  const el = document.getElementById('subtab-marques');
+  const rows = PARAMS.marques;
+  let bodyRows = rows.map((m,idx)=>{
+    return `<tr>
+      <td><input type="text" data-table="marques" data-idx="${idx}" data-field="sousMarque" value="${escapeHtml(m.sousMarque)}" placeholder="ex: Level PP"></td>
+      <td><input type="text" data-table="marques" data-idx="${idx}" data-field="createur" value="${escapeHtml(m.createur)}" placeholder="ex: Level"></td>
+      <td class="col-mid"><select data-table="marques" data-idx="${idx}" data-field="type">
+        <option value="Optique" ${m.type==='Optique'?'selected':''}>Optique</option>
+        <option value="Solaire" ${m.type==='Solaire'?'selected':''}>Solaire</option>
+      </select></td>
+      <td class="row-actions"><button class="btn btn-sm btn-danger" data-action="del-marque" data-idx="${idx}">Suppr.</button></td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Correspondance marque → créateur / type (${rows.length})</h3>
+        <div class="row-actions">
+          <button class="btn btn-sm" id="btnPasteMarques">Coller depuis Sheets</button>
+          <button class="btn btn-sm btn-primary" id="btnAddMarque">+ Ajouter une ligne</button>
+        </div>
+      </div>
+      <p class="section-desc" style="margin-bottom:14px;">Chaque valeur exacte qui peut apparaître dans la colonne "Marque" de l'export (LUKKAS, Lukkas Audio, Level PP...) est associée ici à un créateur et un type. Le matching se fait sans tenir compte de la casse : pas besoin de dupliquer une ligne juste pour une variante de majuscules.</p>
+      <div class="paste-box" id="pasteBoxMarques">
+        <textarea class="paste-area" id="pasteAreaMarques" placeholder="Colle ici les colonnes SousMarque, Createur, Type copiées depuis Google Sheets."></textarea>
+        <div class="row-actions" style="margin-top:8px;">
+          <button class="btn btn-sm btn-primary" id="btnImportMarques">Importer</button>
+          <button class="btn btn-sm btn-ghost" id="btnCancelPasteMarques">Annuler</button>
+        </div>
+        <div class="hint">Colonnes attendues, dans l'ordre : SousMarque · Créateur · Type. Les variantes de casse d'une même sous-marque sont fusionnées automatiquement.</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Sous-marque (telle qu'à l'export)</th><th>Créateur</th><th>Type</th><th></th></tr></thead>
+          <tbody>${bodyRows || ''}</tbody>
+        </table>
+        ${rows.length===0 ? '<div class="empty-state">Aucune correspondance configurée.</div>' : ''}
+      </div>
+    </div>`;
+
+  el.querySelector('#btnAddMarque').addEventListener('click', ()=>{
+    PARAMS.marques.push(emptyMarque());
+    saveParams(); renderMarques();
+  });
+  el.querySelector('#btnPasteMarques').addEventListener('click', ()=>{
+    el.querySelector('#pasteBoxMarques').classList.add('open');
+  });
+  el.querySelector('#btnCancelPasteMarques').addEventListener('click', ()=>{
+    el.querySelector('#pasteBoxMarques').classList.remove('open');
+  });
+  el.querySelector('#btnImportMarques').addEventListener('click', ()=>{
+    const text = el.querySelector('#pasteAreaMarques').value;
+    const res = importMarquesFromPaste(text);
+    showToast(`${res.added} ajoutée(s), ${res.updated} mise(s) à jour`);
+    renderMarques();
+  });
+  el.querySelectorAll('[data-table="marques"]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const idx = Number(inp.dataset.idx);
+      PARAMS.marques[idx][inp.dataset.field] = inp.value;
+      saveParams();
+    });
+    inp.addEventListener('change', ()=>{
+      const idx = Number(inp.dataset.idx);
+      PARAMS.marques[idx][inp.dataset.field] = inp.value;
+      saveParams();
+    });
+  });
+  el.querySelectorAll('[data-action="del-marque"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = Number(btn.dataset.idx);
+      if(!confirm(`Supprimer la correspondance "${PARAMS.marques[idx].sousMarque}" ?`)) return;
+      PARAMS.marques.splice(idx,1);
+      saveParams(); renderMarques();
+    });
+  });
+}
+function importMarquesFromPaste(text){
+  const rows = parsePastedTable(text);
+  let start = 0;
+  if(rows.length && normalizeHeaderLabel(rows[0][0])==='sousmarque') start = 1;
+  let added=0, updated=0;
+  for(let i=start;i<rows.length;i++){
+    const [sousMarque, createur, type] = rows[i];
+    if(!sousMarque) continue;
+    const key = normMarque(sousMarque);
+    const existingIdx = PARAMS.marques.findIndex(m=>normMarque(m.sousMarque)===key);
+    const typeFinal = /sol/i.test((type||'').trim()) ? 'Solaire' : 'Optique';
+    const obj = {sousMarque: sousMarque.trim(), createur: (createur||'').trim(), type: typeFinal};
+    if(existingIdx>=0){ PARAMS.marques[existingIdx]=obj; updated++; }
+    else { PARAMS.marques.push(obj); added++; }
+  }
+  saveParams();
+  return {added, updated};
+}
+function buildMarqueMap(){
+  const map = new Map();
+  PARAMS.marques.forEach(m=>{
+    if(m.sousMarque) map.set(normMarque(m.sousMarque), {createur:m.createur, type:m.type});
+  });
+  return map;
+}
+
+/* ======================= PARAMS: MINSTOCK ======================= */
+function emptyMinStock(){ return {createur:'', type:'Optique', seuilRef:1, minDefaut:0, overrides:{}}; }
+function minStockKey(createur, type){ return normMarque(createur)+'|'+normMarque(type); }
+function renderMinStock(){
+  const el = document.getElementById('subtab-minstock');
+  const rows = PARAMS.minstock;
+  const magasins = PARAMS.magasins;
+  let storeHeaders = magasins.map(m=>`<th class="col-narrow">${escapeHtml(m.code)}</th>`).join('');
+  let bodyRows = rows.map((r,idx)=>{
+    let storeCells = magasins.map(m=>{
+      const v = (r.overrides && r.overrides[m.code]!==undefined) ? r.overrides[m.code] : '';
+      return `<td class="col-narrow"><input type="text" data-table="minstock-override" data-idx="${idx}" data-store="${escapeHtml(m.code)}" value="${escapeHtml(v)}" placeholder="déf."></td>`;
+    }).join('');
+    return `<tr>
+      <td><input type="text" data-table="minstock" data-idx="${idx}" data-field="createur" value="${escapeHtml(r.createur)}" placeholder="ex: Lukkas"></td>
+      <td class="col-mid"><select data-table="minstock" data-idx="${idx}" data-field="type">
+        <option value="Optique" ${r.type==='Optique'?'selected':''}>Optique</option>
+        <option value="Solaire" ${r.type==='Solaire'?'selected':''}>Solaire</option>
+      </select></td>
+      <td class="col-narrow"><input type="text" data-table="minstock" data-idx="${idx}" data-field="seuilRef" value="${escapeHtml(r.seuilRef)}"></td>
+      <td class="col-narrow"><input type="text" data-table="minstock" data-idx="${idx}" data-field="minDefaut" value="${escapeHtml(r.minDefaut)}"></td>
+      ${storeCells}
+      <td class="row-actions"><button class="btn btn-sm btn-danger" data-action="del-minstock" data-idx="${idx}">Suppr.</button></td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h3>Stock minimum par créateur / type (${rows.length})</h3>
+        <div class="row-actions">
+          <button class="btn btn-sm" id="btnPasteMinStock">Coller depuis Sheets</button>
+          <button class="btn btn-sm btn-primary" id="btnAddMinStock">+ Ajouter une ligne</button>
+        </div>
+      </div>
+      <p class="section-desc" style="margin-bottom:14px;">"Seuil/référence" est le nombre d'exemplaires d'une même référence qu'un magasin garde toujours en stock (1 par défaut). "Min par défaut" est le stock total minimum (toutes références confondues) qu'un magasin doit garder pour ce créateur/type avant de pouvoir céder du surplus — les colonnes par magasin permettent de personnaliser ce minimum, sinon la valeur par défaut s'applique.</p>
+      <div class="paste-box" id="pasteBoxMinStock">
+        <textarea class="paste-area" id="pasteAreaMinStock" placeholder="Colle ici, EN INCLUANT la ligne d'en-tête : Createur, Type, Min par Defaut, puis les codes magasins (ex: 247001, 247002...)."></textarea>
+        <div class="row-actions" style="margin-top:8px;">
+          <button class="btn btn-sm btn-primary" id="btnImportMinStock">Importer</button>
+          <button class="btn btn-sm btn-ghost" id="btnCancelPasteMinStock">Annuler</button>
+        </div>
+        <div class="hint">La première ligne collée doit être l'en-tête, comme dans ton onglet MinStock actuel — c'est elle qui indique à quel magasin correspond chaque colonne.</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Créateur</th><th>Type</th><th>Seuil/réf.</th><th>Min par défaut</th>${storeHeaders}<th></th></tr></thead>
+          <tbody>${bodyRows || ''}</tbody>
+        </table>
+        ${rows.length===0 ? '<div class="empty-state">Aucun seuil configuré. Sans configuration pour un créateur/type, le minimum agrégé reste à zéro ; seul joue le seuil par référence (1 par défaut).</div>' : ''}
+      </div>
+    </div>`;
+
+  el.querySelector('#btnAddMinStock').addEventListener('click', ()=>{
+    PARAMS.minstock.push(emptyMinStock());
+    saveParams(); renderMinStock();
+  });
+  el.querySelector('#btnPasteMinStock').addEventListener('click', ()=>{
+    el.querySelector('#pasteBoxMinStock').classList.add('open');
+  });
+  el.querySelector('#btnCancelPasteMinStock').addEventListener('click', ()=>{
+    el.querySelector('#pasteBoxMinStock').classList.remove('open');
+  });
+  el.querySelector('#btnImportMinStock').addEventListener('click', ()=>{
+    const text = el.querySelector('#pasteAreaMinStock').value;
+    const res = importMinStockFromPaste(text);
+    if(res.error){ showToast(res.error); return; }
+    showToast(`${res.added} ajoutée(s), ${res.updated} mise(s) à jour`);
+    renderMinStock();
+  });
+  el.querySelectorAll('[data-table="minstock"]').forEach(inp=>{
+    const handler = ()=>{
+      const idx = Number(inp.dataset.idx);
+      const field = inp.dataset.field;
+      PARAMS.minstock[idx][field] = (field==='seuilRef'||field==='minDefaut') ? inp.value : inp.value;
+      saveParams();
+    };
+    inp.addEventListener('input', handler);
+    inp.addEventListener('change', handler);
+  });
+  el.querySelectorAll('[data-table="minstock-override"]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const idx = Number(inp.dataset.idx);
+      const store = inp.dataset.store;
+      if(!PARAMS.minstock[idx].overrides) PARAMS.minstock[idx].overrides = {};
+      if(inp.value.trim()===''){ delete PARAMS.minstock[idx].overrides[store]; }
+      else { PARAMS.minstock[idx].overrides[store] = inp.value.trim(); }
+      saveParams();
+    });
+  });
+  el.querySelectorAll('[data-action="del-minstock"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = Number(btn.dataset.idx);
+      if(!confirm(`Supprimer la ligne "${PARAMS.minstock[idx].createur} / ${PARAMS.minstock[idx].type}" ?`)) return;
+      PARAMS.minstock.splice(idx,1);
+      saveParams(); renderMinStock();
+    });
+  });
+}
+function importMinStockFromPaste(text){
+  const rows = parsePastedTable(text);
+  if(!rows.length) return {added:0, updated:0, error:`Aucune donnée détectée.`};
+  const header = rows[0].map(normalizeHeaderLabel);
+  if(header[0]!=='createur'){
+    return {added:0, updated:0, error:`La première ligne collée doit être l'en-tête (Createur, Type, Min par défaut, puis les codes magasins).`};
+  }
+  const colMap = {};
+  header.forEach((h, idx)=>{
+    if(idx===0) return;
+    if(h==='type') colMap[idx] = {kind:'type'};
+    else if(h.indexOf('seuil')!==-1) colMap[idx] = {kind:'seuilRef'};
+    else if(h.indexOf('min')!==-1) colMap[idx] = {kind:'minDefaut'};
+    else colMap[idx] = {kind:'store', code: rows[0][idx].trim()};
+  });
+  let added=0, updated=0;
+  for(let i=1;i<rows.length;i++){
+    const cells = rows[i];
+    const createur = (cells[0]||'').trim();
+    if(!createur) continue;
+    let type='Optique', minDefaut=0, seuilRef=1;
+    const overrides = {};
+    cells.forEach((val, idx)=>{
+      if(idx===0) return;
+      const target = colMap[idx];
+      if(!target) return;
+      if(target.kind==='type') type = /sol/i.test(val) ? 'Solaire' : 'Optique';
+      else if(target.kind==='minDefaut') minDefaut = Number(val)||0;
+      else if(target.kind==='seuilRef'){ const v=Number(val); seuilRef = Number.isFinite(v)?v:1; }
+      else if(target.kind==='store'){
+        const v=(val||'').trim();
+        if(v!=='') overrides[target.code]=v;
+      }
+    });
+    const key = minStockKey(createur, type);
+    const existingIdx = PARAMS.minstock.findIndex(r=>minStockKey(r.createur,r.type)===key);
+    const obj = {createur, type, minDefaut, seuilRef, overrides};
+    if(existingIdx>=0){ PARAMS.minstock[existingIdx]=obj; updated++; }
+    else { PARAMS.minstock.push(obj); added++; }
+  }
+  saveParams();
+  return {added, updated};
+}
+function buildMinStockMap(){
+  const map = new Map();
+  PARAMS.minstock.forEach(r=>map.set(minStockKey(r.createur,r.type), r));
+  return map;
+}
+function getSeuilRef(minMap, createur, type){
+  const r = minMap.get(minStockKey(createur,type));
+  if(!r) return 1;
+  const v = Number(r.seuilRef);
+  return Number.isFinite(v) && v>=0 ? v : 1;
+}
+function getMinTotal(minMap, createur, type, storeCode){
+  const r = minMap.get(minStockKey(createur,type));
+  if(!r) return 0;
+  if(r.overrides && r.overrides[storeCode]!==undefined && r.overrides[storeCode]!==''){
+    const v = Number(r.overrides[storeCode]);
+    if(Number.isFinite(v)) return v;
+  }
+  const d = Number(r.minDefaut);
+  return Number.isFinite(d) ? d : 0;
+}
+
+/* ======================= CSV IMPORT ======================= */
+const KNOWN_COLUMNS = {
+  'famille':'famille',
+  'code produit':'codeProduit',
+  'marque':'marque',
+  'fournisseur':'fournisseur',
+  'libelle':'libelle',
+  'taille':'taille',
+  'couleur':'couleur',
+  'total':'total'
+};
+function decodeFileBuffer(buffer){
+  let text = new TextDecoder('utf-8', {fatal:false}).decode(buffer);
+  if(text.indexOf('\uFFFD') !== -1){
+    text = new TextDecoder('windows-1252').decode(buffer);
+  }
+  return text;
+}
+function parseCSVLine(line, sep){
+  sep = sep || ';';
+  const out = [];
+  let cur = '';
+  let inQuotes = false;
+  for(let i=0;i<line.length;i++){
+    const c = line[i];
+    if(inQuotes){
+      if(c==='"'){
+        if(line[i+1]==='"'){ cur+='"'; i++; }
+        else inQuotes = false;
+      } else cur += c;
+    } else {
+      if(c==='"') inQuotes = true;
+      else if(c===sep){ out.push(cur); cur=''; }
+      else cur += c;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+function parseCosiumCSV(text){
+  const lines = text.split(/\r\n|\n|\r/);
+  let headerIdx = -1, headerCells = null;
+  for(let i=0;i<lines.length;i++){
+    if(!lines[i] || !lines[i].trim()) continue;
+    const cells = parseCSVLine(lines[i]).map(c=>c.trim());
+    if(normalizeHeaderLabel(cells[0])==='famille'){ headerIdx=i; headerCells=cells; break; }
+  }
+  if(headerIdx===-1){
+    throw new Error(`Colonne "Famille" introuvable en tête de fichier — ce fichier ne ressemble pas à un export Cosium standard.`);
+  }
+  const colIndex = {};
+  const storeCols = [];
+  headerCells.forEach((h, idx)=>{
+    const norm = normalizeHeaderLabel(h);
+    if(KNOWN_COLUMNS[norm]){ colIndex[KNOWN_COLUMNS[norm]] = idx; }
+    else if(h.trim()!==''){ storeCols.push({code:h.trim(), idx}); }
+  });
+  const required = ['famille','codeProduit','marque','fournisseur','libelle','taille','couleur'];
+  const missing = required.filter(k=>colIndex[k]===undefined);
+  if(missing.length){
+    throw new Error(`Colonnes manquantes dans l'export : ${missing.join(', ')}`);
+  }
+  const rows = [];
+  for(let i=headerIdx+1;i<lines.length;i++){
+    if(!lines[i] || !lines[i].trim()) continue;
+    const cells = parseCSVLine(lines[i]);
+    const codeProduit = (cells[colIndex.codeProduit]||'').trim();
+    if(!codeProduit) continue;
+    const qtes = {};
+    storeCols.forEach(sc=>{
+      const raw = (cells[sc.idx]||'').trim();
+      const v = raw==='' ? 0 : parseInt(raw,10);
+      qtes[sc.code] = Number.isFinite(v) ? v : 0;
+    });
+    rows.push({
+      famille: (cells[colIndex.famille]||'').trim(),
+      codeProduit,
+      marque: (cells[colIndex.marque]||'').trim(),
+      fournisseur: (cells[colIndex.fournisseur]||'').trim(),
+      libelle: (cells[colIndex.libelle]||'').trim(),
+      taille: (cells[colIndex.taille]||'').trim(),
+      couleur: (cells[colIndex.couleur]||'').trim(),
+      qtes
+    });
+  }
+  return {storeCodes: storeCols.map(s=>s.code), rows};
+}
+
+const fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const text = decodeFileBuffer(ev.target.result);
+      const parsed = parseCosiumCSV(text);
+      IMPORT_DATA = parsed;
+      renderImportSummary(file.name, parsed);
+    }catch(err){
+      document.getElementById('importSummary').innerHTML =
+        `<div class="alert-box alert-red" style="margin-top:14px;">⚠️ ${escapeHtml(err.message)}</div>`;
+      document.getElementById('calcCard').style.display = 'none';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+function renderImportSummary(fileName, parsed){
+  const knownStores = parsed.storeCodes.filter(c=>magasinByCode(c));
+  const unknownStores = parsed.storeCodes.filter(c=>!magasinByCode(c));
+  document.getElementById('importSummary').innerHTML = `
+    <div class="summary-grid">
+      <div class="summary-pill"><div class="num">${parsed.rows.length}</div><div class="lbl">Références</div></div>
+      <div class="summary-pill"><div class="num">${parsed.storeCodes.length}</div><div class="lbl">Magasins détectés</div></div>
+      <div class="summary-pill"><div class="num">${unknownStores.length}</div><div class="lbl">Magasins non configurés</div></div>
+    </div>
+    <p class="hint" style="margin-top:10px;">${escapeHtml(fileName)} — codes magasins : ${parsed.storeCodes.map(c=>escapeHtml(c)).join(', ')}</p>
+    ${unknownStores.length ? `<div class="alert-box alert-amber" style="margin-top:10px;">⚠️ Codes magasins absents de Paramètres &gt; Magasins : ${unknownStores.map(escapeHtml).join(', ')}. Le calcul fonctionnera quand même, mais pense à les configurer pour générer leurs emails.</div>` : ''}
+  `;
+  document.getElementById('calcCard').style.display = 'block';
+}
+
+/* ======================= MOTEUR DE CALCUL ======================= */
+function titleCase(s){
+  return (s||'').toString().trim().toLowerCase().replace(/\b\p{L}/gu, c=>c.toUpperCase());
+}
+function resolveCreateurType(marqueMap, marqueRaw, familleRaw){
+  const key = normMarque(marqueRaw);
+  const mapped = marqueMap.get(key);
+  if(mapped && mapped.createur) return {createur: mapped.createur, type: mapped.type, source:'mapping'};
+  const fam = normalizeHeaderLabel(familleRaw);
+  let type = null;
+  if(fam==='mon') type = 'Optique';
+  else if(fam==='sol') type = 'Solaire';
+  return {createur: marqueRaw || '(Marque inconnue)', type: type || 'Optique', source:'fallback'};
+}
+function aggKey(createur, type){ return normMarque(createur)+'|'+normMarque(type); }
+
+function computeTransferts(importData, params){
+  const marqueMap = buildMarqueMap();
+  const minMap = buildMinStockMap();
+  const storeCodes = importData.storeCodes;
+  const alertes = [];
+  const seenUnknownMarques = new Set();
+  const fallbackCanonical = new Map();
+
+  const enriched = importData.rows.map(r=>{
+    const resolved = resolveCreateurType(marqueMap, r.marque, r.famille);
+    let createur = resolved.createur;
+    if(resolved.source==='fallback'){
+      const key = normMarque(r.marque);
+      if(!fallbackCanonical.has(key)) fallbackCanonical.set(key, titleCase(r.marque) || '(Marque inconnue)');
+      createur = fallbackCanonical.get(key);
+      if(!seenUnknownMarques.has(key)){
+        seenUnknownMarques.add(key);
+        alertes.push({
+          level:'amber',
+          message:`Marque "${r.marque}" absente du mapping (Paramètres &gt; Marques). Type déduit de la Famille ("${r.famille}") : ${resolved.type}. Les variantes de casse de cette marque sont tout de même regroupées ensemble (${createur}).`
+        });
+      }
+    }
+    const seuilRef = getSeuilRef(minMap, createur, resolved.type);
+    return Object.assign({}, r, {createur, type:resolved.type, seuilRef});
+  });
+
+  storeCodes.forEach(code=>{
+    if(!magasinByCode(code)){
+      alertes.push({
+        level:'amber',
+        message:`Le code magasin "${code}" présent dans l'export n'est pas configuré (Paramètres &gt; Magasins). Il sera traité avec une priorité minimale et sans email automatique.`
+      });
+    }
+  });
+
+  const aggTotals = {};
+  const groupInfo = {};
+  enriched.forEach(r=>{
+    const k = aggKey(r.createur, r.type);
+    if(!groupInfo[k]) groupInfo[k] = {createur:r.createur, type:r.type};
+    if(!aggTotals[k]) aggTotals[k] = {};
+    storeCodes.forEach(code=>{
+      aggTotals[k][code] = (aggTotals[k][code]||0) + (r.qtes[code]||0);
+    });
+  });
+
+  const budget = {};
+  Object.keys(aggTotals).forEach(k=>{
+    const info = groupInfo[k];
+    budget[k] = {};
+    storeCodes.forEach(code=>{
+      const floor = getMinTotal(minMap, info.createur, info.type, code);
+      const total = aggTotals[k][code]||0;
+      budget[k][code] = Math.max(0, total - floor);
+    });
+  });
+
+  const groups = {};
+  enriched.forEach(r=>{
+    const k = aggKey(r.createur, r.type);
+    if(!groups[k]) groups[k]=[];
+    groups[k].push(r);
+  });
+
+  const transferts = [];
+  const needsUnmet = [];
+
+  Object.keys(groups).forEach(k=>{
+    const refs = groups[k];
+    const localBudget = Object.assign({}, budget[k]);
+
+    refs.forEach(r=>{
+      const seuil = r.seuilRef;
+      const surplusByStore = {};
+      const needByStore = {};
+      storeCodes.forEach(code=>{
+        const q = r.qtes[code]||0;
+        const rawSurplus = Math.max(0, q - seuil);
+        const cap = Math.min(rawSurplus, localBudget[code]||0);
+        if(cap>0) surplusByStore[code] = cap;
+        const need = Math.max(0, seuil - q);
+        if(need>0) needByStore[code] = need;
+      });
+
+      const receivers = Object.keys(needByStore).sort((a,b)=>magasinPriority(a)-magasinPriority(b));
+      const senders = Object.keys(surplusByStore).sort((a,b)=>surplusByStore[b]-surplusByStore[a]);
+      let si = 0;
+
+      receivers.forEach(code=>{
+        let need = needByStore[code];
+        while(need>0 && si<senders.length){
+          const senderCode = senders[si];
+          const avail = surplusByStore[senderCode];
+          if(avail<=0){ si++; continue; }
+          const qty = Math.min(avail, need);
+          transferts.push({
+            codeProduit:r.codeProduit, marque:r.marque, createur:r.createur, type:r.type,
+            libelle:r.libelle, taille:r.taille, couleur:r.couleur,
+            qty, depuis:senderCode, vers:code
+          });
+          surplusByStore[senderCode] -= qty;
+          localBudget[senderCode] -= qty;
+          need -= qty;
+          if(surplusByStore[senderCode]<=0) si++;
+        }
+        if(need>0){
+          needsUnmet.push({codeProduit:r.codeProduit, marque:r.marque, libelle:r.libelle, taille:r.taille, couleur:r.couleur, storeCode:code, need});
+        }
+      });
+    });
+  });
+
+  needsUnmet.forEach(n=>{
+    const m = magasinByCode(n.storeCode);
+    n.storeNom = m ? m.nom : n.storeCode;
+  });
+
+  // stock projeté après transferts, agrégé par créateur/type/magasin
+  const aggAfter = {};
+  Object.keys(aggTotals).forEach(k=>{
+    aggAfter[k] = Object.assign({}, aggTotals[k]);
+  });
+  transferts.forEach(t=>{
+    const k = aggKey(t.createur, t.type);
+    aggAfter[k][t.depuis] = (aggAfter[k][t.depuis]||0) - t.qty;
+    aggAfter[k][t.vers] = (aggAfter[k][t.vers]||0) + t.qty;
+  });
+
+  return {transferts, alertes, besoinsNonCombles: needsUnmet, storeCodes, aggTotals, aggAfter, groupInfo, computedAt: new Date()};
+}
+
+document.getElementById('btnCompute').addEventListener('click', ()=>{
+  if(!IMPORT_DATA){ showToast('Importe un fichier avant de calculer.'); return; }
+  RESULT = computeTransferts(IMPORT_DATA, PARAMS);
+  renderResults();
+  renderEmails();
+  document.querySelector('.tab-btn[data-tab="results"]').click();
+  showToast(`${RESULT.transferts.length} transfert(s) calculé(s)`);
+});
+
+/* ======================= RENDU RÉSULTATS ======================= */
+function downloadTextFile(filename, content, mime){
+  const blob = new Blob([content], {type: mime || 'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+}
+function nomMagasin(code){
+  const m = magasinByCode(code);
+  return m && m.nom ? m.nom : code;
+}
+function renderResults(){
+  const el = document.getElementById('resultsContent');
+  if(!RESULT){
+    el.innerHTML = '<div class="empty-state">Aucun calcul effectué pour l\u2019instant.</div>';
+    return;
+  }
+  const alertesHtml = RESULT.alertes.length
+    ? RESULT.alertes.map(a=>`<div class="alert-box alert-${a.level}">${a.level==='red'?'⛔':'⚠️'} ${a.message}</div>`).join('')
+    : `<div class="alert-box" style="border-color:rgba(63,163,77,0.4);background:rgba(63,163,77,0.08);color:#9FE3AC;">✅ Aucune alerte de configuration sur cette répartition.</div>`;
+
+  let besoinsHtml = '';
+  if(RESULT.besoinsNonCombles && RESULT.besoinsNonCombles.length){
+    const rowsBesoins = RESULT.besoinsNonCombles.map(n=>`
+      <tr>
+        <td>${escapeHtml(n.codeProduit)}</td>
+        <td>${escapeHtml(n.libelle)}</td>
+        <td>${escapeHtml(n.couleur)}</td>
+        <td>${escapeHtml(n.taille)}</td>
+        <td>${escapeHtml(n.storeNom)}</td>
+        <td>${n.need}</td>
+      </tr>`).join('');
+    besoinsHtml = `
+      <details class="card" style="margin-bottom:18px;">
+        <summary style="cursor:pointer;font-weight:600;font-size:13.5px;">Besoins non comblés — faute de surplus disponible (${RESULT.besoinsNonCombles.length})</summary>
+        <p class="section-desc" style="margin:10px 0 14px;">Normal et fréquent : la plupart des références n'existent qu'en très peu d'exemplaires, il n'y a donc rien à déplacer. Liste fournie à titre indicatif, pas une alerte à traiter.</p>
+        <div style="overflow-x:auto;max-height:320px;overflow-y:auto;">
+          <table class="data-table">
+            <thead><tr><th>Code produit</th><th>Libellé</th><th>Couleur</th><th>Taille</th><th>Magasin</th><th>Manque</th></tr></thead>
+            <tbody>${rowsBesoins}</tbody>
+          </table>
+        </div>
+      </details>`;
+  }
+
+  const sorted = RESULT.transferts.slice().sort((a,b)=>{
+    const pa = magasinPriority(a.vers), pb = magasinPriority(b.vers);
+    if(pa!==pb) return pa-pb;
+    return a.codeProduit.localeCompare(b.codeProduit);
+  });
+  const rowsHtml = sorted.map(t=>`
+    <tr>
+      <td>${escapeHtml(t.codeProduit)}</td>
+      <td>${escapeHtml(t.marque)}</td>
+      <td>${escapeHtml(t.libelle)}</td>
+      <td>${escapeHtml(t.couleur)}</td>
+      <td>${escapeHtml(t.taille)}</td>
+      <td>${t.qty}</td>
+      <td>${escapeHtml(nomMagasin(t.depuis))}</td>
+      <td>${escapeHtml(nomMagasin(t.vers))}</td>
+    </tr>`).join('');
+
+  // stock projeté après transferts (groupes ayant eu au moins un mouvement)
+  const touchedKeys = new Set();
+  RESULT.transferts.forEach(t=>touchedKeys.add(aggKey(t.createur,t.type)));
+  let projHtml = '';
+  if(touchedKeys.size){
+    const groupsHtml = Array.from(touchedKeys).map(k=>{
+      const info = RESULT.groupInfo[k];
+      const chips = RESULT.storeCodes.map(code=>{
+        const before = RESULT.aggTotals[k][code]||0;
+        const after = RESULT.aggAfter[k][code]||0;
+        const changed = before!==after;
+        return `<div class="proj-chip${changed?' proj-chip-changed':''}">
+          <div class="proj-chip-store">${escapeHtml(nomMagasin(code))}</div>
+          <div class="proj-chip-value">${before} → ${after}</div>
+        </div>`;
+      }).join('');
+      return `
+        <div class="proj-group">
+          <div class="proj-group-head"><span>${escapeHtml(info.createur)}</span><span class="badge badge-${info.type==='Solaire'?'solaire':'optique'}">${info.type}</span></div>
+          <div class="proj-chip-row">${chips}</div>
+        </div>`;
+    }).join('');
+    projHtml = `
+      <div class="card">
+        <h3 style="font-size:14.5px;margin:0 0 14px;">Stock total projeté après transferts (avant → après)</h3>
+        ${groupsHtml}
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <div style="margin-bottom:18px;">${alertesHtml}</div>
+    ${besoinsHtml}
+    <div class="card">
+      <div class="card-head">
+        <h3>Transferts proposés (${sorted.length})</h3>
+        <button class="btn btn-sm" id="btnExportCsv">Télécharger en CSV</button>
+      </div>
+      <div style="overflow-x:auto;">
+        ${sorted.length ? `<table class="data-table">
+          <thead><tr><th>Code produit</th><th>Marque</th><th>Libellé</th><th>Couleur</th><th>Taille</th><th>Qté</th><th>Depuis</th><th>Vers</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>` : '<div class="empty-state">Aucun transfert nécessaire avec les paramètres actuels.</div>'}
+      </div>
+    </div>
+    ${projHtml}
+  `;
+
+  const btnExport = document.getElementById('btnExportCsv');
+  if(btnExport){
+    btnExport.addEventListener('click', ()=>{
+      const header = 'Code Produit;Marque;Libelle;Couleur;Taille;Qte;Magasin depuis;Magasin vers';
+      const lines = sorted.map(t=>[t.codeProduit,t.marque,t.libelle,t.couleur,t.taille,t.qty,nomMagasin(t.depuis),nomMagasin(t.vers)].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';'));
+      downloadTextFile('transferts_stock.csv', [header].concat(lines).join('\r\n'), 'text/csv;charset=utf-8');
+    });
+  }
+}
+
+/* ======================= EMAILS ======================= */
+function buildEmailsForStore(storeCode, transferts){
+  const store = magasinByCode(storeCode);
+  const nom = store && store.nom ? store.nom : storeCode;
+  const incoming = transferts.filter(t=>t.vers===storeCode);
+  const outgoing = transferts.filter(t=>t.depuis===storeCode);
+  const dateStr = new Date().toLocaleDateString('fr-FR');
+
+  const tplR = PARAMS.emailTemplates.reception;
+  const tplE = PARAMS.emailTemplates.envoi;
+  const baseVars = {
+    magasin: nom,
+    date: dateStr,
+    manager: (store && store.manager) || '',
+    responsable_monture: (store && store.respMonture) || '',
+    responsable_contacto: (store && store.respContacto) || '',
+    responsable_audio: (store && store.respAudio) || '',
+    responsable_verres: (store && store.respVerres) || ''
+  };
+  const varsR = Object.assign({}, baseVars, {nombre:incoming.length});
+  const varsE = Object.assign({}, baseVars, {nombre:outgoing.length});
+
+  const receptionSubject = applyEmailTemplate(tplR.subject, varsR);
+  const receptionBody = applyEmailTemplate(tplR.body, varsR);
+  const envoiSubject = applyEmailTemplate(tplE.subject, varsE);
+  const envoiBody = applyEmailTemplate(tplE.body, varsE);
+
+  return {
+    nom,
+    email: store ? store.email : '',
+    reception: {subject:receptionSubject, body:receptionBody, count:incoming.length},
+    envoi: {subject:envoiSubject, body:envoiBody, count:outgoing.length}
+  };
+}
+function buildBrandGroupedRows(items){
+  const byBrand = {};
+  items.forEach(t=>{
+    const k = normMarque(t.createur);
+    if(!byBrand[k]) byBrand[k] = {label:t.createur, rows:[]};
+    byBrand[k].rows.push(t);
+  });
+  const body = [];
+  Object.keys(byBrand).sort((a,b)=>a.localeCompare(b)).forEach(bk=>{
+    const group = byBrand[bk];
+    body.push([{content:(group.label||'').toLowerCase(), colSpan:8,
+      styles:{fontStyle:'bold', fontSize:9, fillColor:[238,235,229], textColor:[40,40,40], halign:'left'}}]);
+    group.rows.slice().sort((a,b)=>a.codeProduit.localeCompare(b.codeProduit)).forEach(t=>{
+      body.push([t.codeProduit, t.libelle, t.couleur, t.taille, String(t.qty), t.depuis, t.vers, '']);
+    });
+  });
+  return body;
+}
+function generatePdfForStore(storeCode, direction){
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    showToast('Librairie PDF non chargée — vérifie la connexion internet et réessaie.');
+    return;
+  }
+  const list = direction==='envoi'
+    ? RESULT.transferts.filter(t=>t.depuis===storeCode)
+    : RESULT.transferts.filter(t=>t.vers===storeCode);
+  if(!list.length){
+    showToast('Aucun transfert dans ce sens pour ce magasin.');
+    return;
+  }
+  const store = magasinByCode(storeCode);
+  const nom = store && store.nom ? store.nom : storeCode;
+  const now = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  const dateHeure = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const titre = direction==='envoi' ? 'TRANSFERTS — À EXPÉDIER' : 'TRANSFERTS — À RECEVOIR';
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const HEADER_BOTTOM = 26;
+
+  function drawBanner(){
+    doc.setFillColor(13,13,13);
+    doc.rect(0,0,pageWidth,20,'F');
+    doc.setFillColor(204,23,25);
+    doc.rect(0,20,pageWidth,1.2,'F');
+    doc.setTextColor(240,237,230);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(13.5);
+    doc.text(titre, 12, 9);
+    doc.setFontSize(10);
+    doc.setFont('helvetica','normal');
+    doc.text(`${storeCode} — ${nom.toUpperCase()} — ${dateHeure}`, 12, 16);
+  }
+  function drawCheckboxCell(data){
+    if(data.section==='body' && data.column.index===7){
+      const size = 3.2;
+      const x = data.cell.x + (data.cell.width-size)/2;
+      const y = data.cell.y + (data.cell.height-size)/2;
+      doc.setDrawColor(70,70,70);
+      doc.setLineWidth(0.25);
+      doc.rect(x,y,size,size);
+    }
+  }
+
+  // groupement par magasin contrepartie (un magasin = un saut de page)
+  const groupKey = direction==='envoi' ? 'vers' : 'depuis';
+  const byStore = {};
+  list.forEach(t=>{
+    if(!byStore[t[groupKey]]) byStore[t[groupKey]] = [];
+    byStore[t[groupKey]].push(t);
+  });
+  const storeCodesSorted = Object.keys(byStore).sort((a,b)=>magasinPriority(a)-magasinPriority(b));
+
+  storeCodesSorted.forEach((otherCode, idx)=>{
+    if(idx>0) doc.addPage();
+    drawBanner();
+
+    const items = byStore[otherCode];
+    const otherStore = magasinByCode(otherCode);
+    const otherNom = otherStore && otherStore.nom ? otherStore.nom : otherCode;
+    const totalPieces = items.reduce((a,t)=>a+t.qty,0);
+
+    let y = HEADER_BOTTOM + 4;
+    doc.setFillColor(13,13,13);
+    doc.rect(12, y-4.5, pageWidth-24, 6.5, 'F');
+    doc.setTextColor(240,237,230);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10.5);
+    doc.text(`${otherCode} — ${otherNom} — ${totalPieces} pièce${totalPieces>1?'s':''}`, 14, y);
+    y += 4;
+    if(direction==='envoi' && otherStore && otherStore.adresse){
+      doc.setFillColor(228,224,217);
+      doc.rect(12, y-4, pageWidth-24, 5.5, 'F');
+      doc.setTextColor(90,88,84);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.text(otherStore.adresse, 14, y);
+      y += 4;
+    }
+
+    doc.autoTable({
+      head:[['Code','Réf.','Col.','T.','Qté','De','Vers','']],
+      body: buildBrandGroupedRows(items),
+      startY: y+2,
+      theme:'grid',
+      styles:{fontSize:8.5, cellPadding:1.8, textColor:[30,30,30], lineColor:[222,219,213], lineWidth:0.15, valign:'middle'},
+      headStyles:{fillColor:[13,13,13], textColor:[240,237,230], fontStyle:'bold', fontSize:8.5},
+      columnStyles:{
+        4:{cellWidth:11, halign:'center'},
+        5:{cellWidth:15, halign:'center'},
+        6:{cellWidth:15, halign:'center'},
+        7:{cellWidth:9, halign:'center'}
+      },
+      margin:{left:12, right:12, top:HEADER_BOTTOM},
+      didDrawCell: drawCheckboxCell,
+      didDrawPage: drawBanner
+    });
+  });
+
+  const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY : HEADER_BOTTOM;
+  if(finalY < pageHeight - 14){
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(20,20,20);
+    const totalQty = list.reduce((a,t)=>a+t.qty,0);
+    doc.text(`Total : ${totalQty} pièce(s)`, 12, finalY+7);
+  }
+
+  const safeNom = nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_');
+  const safeDate = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+  doc.save(`${direction==='envoi'?'a_expedier':'a_recevoir'}_${storeCode}_${safeNom}_${safeDate}.pdf`);
+}
+function mailtoLink(to, subject, body){
+  return `mailto:${to||''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+function copyToClipboard(text, btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    showToast('Copié dans le presse-papier');
+  }).catch(()=>{
+    showToast('Impossible de copier — sélectionne le texte manuellement');
+  });
+}
+function renderEmails(){
+  const el = document.getElementById('emailsContent');
+  if(!RESULT || !RESULT.transferts.length){
+    el.innerHTML = '<div class="empty-state">Aucun transfert calculé — rien à envoyer pour le moment.</div>';
+    return;
+  }
+  const involvedCodes = new Set();
+  RESULT.transferts.forEach(t=>{ involvedCodes.add(t.depuis); involvedCodes.add(t.vers); });
+  const codes = Array.from(involvedCodes).sort((a,b)=>magasinPriority(a)-magasinPriority(b));
+
+  el.innerHTML = codes.map((code, idx)=>{
+    const data = buildEmailsForStore(code, RESULT.transferts);
+    const hasEmail = !!data.email;
+    return `
+    <div class="store-card">
+      <div class="store-head">
+        <h3>${escapeHtml(data.nom)}</h3>
+        <span class="meta">${hasEmail ? escapeHtml(data.email) : 'email non configuré — voir Paramètres > Magasins'}</span>
+      </div>
+      <div class="email-grid">
+        <div class="email-col">
+          <h4>Réception (${data.reception.count})</h4>
+          <textarea readonly id="rcpt-${idx}">${escapeHtml(data.reception.subject + '\n\n' + data.reception.body)}</textarea>
+          <div class="email-actions">
+            <button class="btn btn-sm btn-primary" data-action="pdf" data-store="${escapeHtml(code)}" data-direction="reception">Télécharger le PDF</button>
+            <button class="btn btn-sm" data-action="copy" data-target="rcpt-${idx}">Copier le texte</button>
+            ${hasEmail ? `<a class="btn btn-sm" href="${mailtoLink(data.email, data.reception.subject, data.reception.body)}">Ouvrir la messagerie</a>` : ''}
+          </div>
+        </div>
+        <div class="email-col">
+          <h4>Envoi (${data.envoi.count})</h4>
+          <textarea readonly id="send-${idx}">${escapeHtml(data.envoi.subject + '\n\n' + data.envoi.body)}</textarea>
+          <div class="email-actions">
+            <button class="btn btn-sm btn-primary" data-action="pdf" data-store="${escapeHtml(code)}" data-direction="envoi">Télécharger le PDF</button>
+            <button class="btn btn-sm" data-action="copy" data-target="send-${idx}">Copier le texte</button>
+            ${hasEmail ? `<a class="btn btn-sm" href="${mailtoLink(data.email, data.envoi.subject, data.envoi.body)}">Ouvrir la messagerie</a>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('[data-action="copy"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const ta = document.getElementById(btn.dataset.target);
+      copyToClipboard(ta.value, btn);
+    });
+  });
+  el.querySelectorAll('[data-action="pdf"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      generatePdfForStore(btn.dataset.store, btn.dataset.direction);
+    });
+  });
+}
+
+/* ======================= ENVOI AUTOMATIQUE (ZIMBRA — EN TEST) ======================= */
+function initZimbraConfigUI(){
+  const inpUrl = document.getElementById('zimbraServerUrl');
+  const inpLogin = document.getElementById('zimbraLogin');
+  if(!inpUrl) return;
+  inpUrl.value = PARAMS.zimbraConfig.serverUrl || '';
+  inpLogin.value = PARAMS.zimbraConfig.login || '';
+  inpUrl.addEventListener('input', ()=>{ PARAMS.zimbraConfig.serverUrl = inpUrl.value.trim(); saveParams(); });
+  inpLogin.addEventListener('input', ()=>{ PARAMS.zimbraConfig.login = inpLogin.value.trim(); saveParams(); });
+
+  document.getElementById('btnTestZimbra').addEventListener('click', testZimbraConnection);
+}
+async function zimbraAuth(serverUrl, login, password){
+  const base = serverUrl.replace(/\/+$/,'');
+  const res = await fetch(base + '/service/soap', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      Header:{context:{_jsns:'urn:zimbra'}},
+      Body:{AuthRequest:{_jsns:'urn:zimbraAccount', account:{_content:login, by:'name'}, password:{_content:password}}}
+    })
+  });
+  const text = await res.text();
+  let data;
+  try{ data = JSON.parse(text); }catch(e){ throw new Error(`Réponse inattendue du serveur (statut ${res.status}) : ${text.slice(0,200)}`); }
+  if(data.Body && data.Body.Fault){
+    const reason = data.Body.Fault.Reason && data.Body.Fault.Reason.Text ? data.Body.Fault.Reason.Text : 'Échec inconnu';
+    throw new Error(`Zimbra a refusé la connexion : ${reason}`);
+  }
+  const tokenObj = data.Body && data.Body.AuthResponse && data.Body.AuthResponse.authToken && data.Body.AuthResponse.authToken[0];
+  const authToken = tokenObj && (tokenObj._content || tokenObj);
+  if(!authToken) throw new Error('Réponse de Zimbra reçue mais sans jeton d\u2019authentification — format inattendu.');
+  return authToken;
+}
+async function testZimbraConnection(){
+  const resultEl = document.getElementById('zimbraTestResult');
+  const serverUrl = document.getElementById('zimbraServerUrl').value.trim();
+  const login = document.getElementById('zimbraLogin').value.trim();
+  const password = document.getElementById('zimbraPassword').value;
+  if(!serverUrl || !login || !password){
+    resultEl.innerHTML = `<div class="alert-box alert-amber">⚠️ Renseigne l'adresse du serveur, l'identifiant et le mot de passe.</div>`;
+    return;
+  }
+  if(window.location.protocol === 'file:'){
+    resultEl.innerHTML = `<div class="alert-box alert-amber">⚠️ Cette page est ouverte depuis un fichier local (file://), pas depuis son adresse en ligne. Ce cas particulier fait souvent échouer le test indépendamment de Zimbra — refais le test depuis la page publiée sur GitHub Pages pour un résultat fiable.</div>`;
+    document.getElementById('zimbraPassword').value = '';
+    return;
+  }
+  resultEl.innerHTML = `<div class="hint">Connexion en cours...</div>`;
+  try{
+    await zimbraAuth(serverUrl, login, password);
+    resultEl.innerHTML = `<div class="alert-box" style="border-color:rgba(63,163,77,0.4);background:rgba(63,163,77,0.08);color:#9FE3AC;">✅ Connexion réussie. On peut passer à la construction de l'envoi automatique complet.</div>`;
+  }catch(err){
+    const isNetworkError = err instanceof TypeError;
+    resultEl.innerHTML = `<div class="alert-box alert-red">⛔ ${escapeHtml(err.message)}${isNetworkError ? ' — ceci ressemble à un blocage CORS : le serveur Zimbra n\u2019autorise probablement pas les requêtes depuis cette page. Il faudra passer par un petit relais côté serveur, à voir ensemble.' : ''}</div>`;
+  }
+  document.getElementById('zimbraPassword').value = '';
+}
+
+/* ======================= PARAMS: SAUVEGARDE ======================= */
+function renderBackup(){
+  const el = document.getElementById('subtab-backup');
+  el.innerHTML = `
+    <div class="card">
+      <h3 style="font-size:14.5px;margin:0 0 10px;">Sauvegarde des paramètres</h3>
+      <p class="section-desc" style="margin-bottom:16px;">Ces paramètres sont stockés uniquement dans ce navigateur. Exporte un fichier de sauvegarde pour les transférer sur un autre ordinateur, ou pour ne pas les perdre si tu vides le cache du navigateur.</p>
+      <div class="summary-grid" style="margin-bottom:16px;">
+        <div class="summary-pill"><div class="num">${PARAMS.magasins.length}</div><div class="lbl">Magasins</div></div>
+        <div class="summary-pill"><div class="num">${PARAMS.marques.length}</div><div class="lbl">Marques</div></div>
+        <div class="summary-pill"><div class="num">${PARAMS.minstock.length}</div><div class="lbl">Stock mini</div></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-primary" id="btnExportParams">Exporter (JSON)</button>
+        <button class="btn" id="btnImportParamsTrigger">Importer (JSON)</button>
+        <input type="file" id="importParamsFile" accept=".json" style="display:none;">
+      </div>
+    </div>`;
+  el.querySelector('#btnExportParams').addEventListener('click', ()=>{
+    downloadTextFile('repartition_stocks_params.json', JSON.stringify(PARAMS, null, 2), 'application/json');
+  });
+  el.querySelector('#btnImportParamsTrigger').addEventListener('click', ()=>{
+    el.querySelector('#importParamsFile').click();
+  });
+  el.querySelector('#importParamsFile').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        if(!confirm('Remplacer les paramètres actuels par ce fichier de sauvegarde ?')) return;
+        PARAMS = {
+          magasins: data.magasins || [],
+          marques: data.marques || [],
+          minstock: data.minstock || [],
+          emailTemplates: data.emailTemplates || {}
+        };
+        normalizeParams();
+        saveParams();
+        renderMagasins(); renderMarques(); renderMinStock(); renderEmailTemplates(); renderBackup();
+        showToast('Paramètres importés');
+      }catch(err){
+        showToast('Fichier JSON invalide');
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+/* ======================= GUIDE ======================= */
+function renderGuide(){
+  const el = document.getElementById('tab-guide');
+  el.innerHTML = `
+    <h2 class="section-title">Mode d'emploi</h2>
+    <div class="card">
+      <h3>1. Configurer les paramètres (une fois)</h3>
+      <p>Dans l'onglet Paramètres, renseigne les Magasins (code, nom, email, adresse, ordre de priorité), les Marques (correspondance entre la valeur "Marque" de l'export et le créateur/type réel), et le Stock mini (seuil par référence et minimum agrégé par créateur/type). Le bouton "Coller depuis Sheets" sur chaque table permet d'importer rapidement les données déjà présentes dans le Google Sheet.</p>
+      <h3>2. Importer un export Cosium</h3>
+      <p>Dans l'onglet Import &amp; calcul, dépose le fichier CSV exporté depuis Cosium. Les magasins présents dans l'export sont détectés automatiquement, quel que soit leur nombre.</p>
+      <h3>3. Calculer</h3>
+      <p>Clique sur "Calculer la répartition". L'app identifie, pour chaque référence, les magasins en surplus (au-dessus du seuil par référence, sans descendre sous le minimum agrégé configuré) et les magasins en besoin (sous le seuil), puis propose des transferts en respectant l'ordre de priorité des magasins.</p>
+      <h3>4. Résultats et emails</h3>
+      <p>L'onglet Résultats liste les transferts proposés et les alertes (marque non cartographiée, magasin non configuré, besoin non comblé). L'onglet Emails génère, pour chaque magasin concerné, un email "Réception" et un email "Envoi", copiables ou directement ouvrables dans ta messagerie.</p>
+      <h3>Sauvegarde</h3>
+      <p>Les paramètres sont stockés dans ce navigateur uniquement. Utilise Paramètres &gt; Sauvegarde pour exporter un fichier JSON de secours, notamment avant de changer d'ordinateur ou de navigateur.</p>
+    </div>`;
+}
+
+/* ======================= PARAMS: MODÈLES D'EMAILS ======================= */
+function renderEmailTemplates(){
+  const el = document.getElementById('subtab-emailtpl');
+  const cards = [
+    {key:'reception', label:'Email "Réception"'},
+    {key:'envoi', label:'Email "Envoi"'}
+  ];
+  el.innerHTML = `
+    <div class="card">
+      <p class="section-desc" style="margin-bottom:0;">Variables disponibles, à insérer telles quelles dans le sujet ou le corps : <code>{{magasin}}</code> (nom du magasin), <code>{{nombre}}</code> (nombre de références), <code>{{date}}</code> (date du jour), <code>{{manager}}</code>, <code>{{responsable_monture}}</code>, <code>{{responsable_contacto}}</code>, <code>{{responsable_audio}}</code>, <code>{{responsable_verres}}</code> (issus de la fiche du magasin dans Paramètres &gt; Magasins — vide si non renseigné). Tout le reste du texte est libre.</p>
+    </div>
+    ${cards.map(c=>{
+      const tpl = PARAMS.emailTemplates[c.key];
+      return `
+      <div class="card">
+        <div class="card-head">
+          <h3>${c.label}</h3>
+          <button class="btn btn-sm" data-action="reset-tpl" data-tpl="${c.key}">Réinitialiser ce modèle</button>
+        </div>
+        <p class="hint" style="margin:0 0 4px;">Sujet</p>
+        <input type="text" data-tpl="${c.key}" data-field="subject" value="${escapeHtml(tpl.subject)}" style="width:100%;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;margin-bottom:12px;">
+        <p class="hint" style="margin:0 0 4px;">Corps</p>
+        <textarea data-tpl="${c.key}" data-field="body" class="paste-area" style="min-height:160px;font-family:'Barlow',sans-serif;">${escapeHtml(tpl.body)}</textarea>
+      </div>`;
+    }).join('')}
+  `;
+  el.querySelectorAll('[data-tpl][data-field]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      PARAMS.emailTemplates[inp.dataset.tpl][inp.dataset.field] = inp.value;
+      saveParams();
+    });
+  });
+  el.querySelectorAll('[data-action="reset-tpl"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.tpl;
+      if(!confirm(`Réinitialiser le modèle "${key==='reception'?'Réception':'Envoi'}" avec le texte par défaut ? Le texte actuel sera perdu.`)) return;
+      PARAMS.emailTemplates[key] = Object.assign({}, DEFAULT_EMAIL_TEMPLATES[key]);
+      saveParams();
+      renderEmailTemplates();
+      showToast('Modèle réinitialisé');
+    });
+  });
+}
+
+/* ======================= INIT ======================= */
+loadParams();
+renderMagasins();
+renderMarques();
+renderMinStock();
+renderBackup();
+renderGuide();
+renderEmailTemplates();
+initZimbraConfigUI();
+</script>
+</body>
+</html>

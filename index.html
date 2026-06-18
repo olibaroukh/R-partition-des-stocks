@@ -1688,11 +1688,17 @@ async function sendAllEmailsViaZimbra(){
     return;
   }
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const results = jobs.filter(j=>j.skipped).map(j=>`⚠️ ${j.nom} — ${j.skipped}`);
   let done = 0;
   for(const job of realJobs){
     done++;
-    resultEl.innerHTML = `<div class="hint">Envoi ${done}/${realJobs.length} — ${escapeHtml(job.nom)} (${job.direction === 'envoi' ? 'envoi' : 'réception'})...</div>`;
+    const labelDir = job.direction === 'envoi' ? 'Envoi' : 'Réception';
+    resultEl.innerHTML = `<div class="hint">Envoi ${done}/${realJobs.length} — ${escapeHtml(job.nom)} (${labelDir})...</div>`;
+    if(!EMAIL_RE.test(job.email)){
+      results.push(`⛔ ${job.nom} — ${labelDir} : l'adresse configurée ne ressemble pas à un email valide (valeur exacte envoyée : "${job.email}") — envoi annulé sans contacter Zimbra.`);
+      continue;
+    }
     try{
       const built = buildPdfDoc(job.code, job.direction);
       let aid = null;
@@ -1701,9 +1707,9 @@ async function sendAllEmailsViaZimbra(){
         aid = await zimbraUploadAttachment(relayUrl, token, blob, built.filename);
       }
       await zimbraSendMsg(relayUrl, token, {to:job.email, subject:job.subject, bodyText:job.body, aid});
-      results.push(`✅ ${job.nom} — ${job.direction === 'envoi' ? 'Envoi' : 'Réception'}`);
+      results.push(`✅ ${job.nom} — ${labelDir} (destinataire : ${job.email})`);
     }catch(err){
-      results.push(`⛔ ${job.nom} — ${job.direction === 'envoi' ? 'Envoi' : 'Réception'} : ${err.message}`);
+      results.push(`⛔ ${job.nom} — ${labelDir} (destinataire envoyé : "${job.email}") : ${err.message}`);
     }
   }
 

@@ -322,6 +322,8 @@ details.card[open] summary::before{content:'▾ ';}
           <input type="text" id="zimbraLogin" placeholder="prenom.nom@optical-center.com" style="width:100%;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;">
         </div>
       </div>
+      <p class="hint" style="margin:0 0 4px;">Adresse du relais (Cloudflare Worker — laisser vide pour tenter la connexion directe)</p>
+      <input type="text" id="zimbraRelayUrl" placeholder="https://zimbra-relay.tonpseudo.workers.dev" style="width:100%;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;margin-bottom:12px;">
       <p class="hint" style="margin:0 0 4px;">Mot de passe (ou code d'application)</p>
       <input type="password" id="zimbraPassword" autocomplete="off" style="width:280px;background:var(--bg-input);border:1px solid var(--border);color:var(--cream);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 10px;border-radius:7px;margin-bottom:12px;">
       <div class="row-actions">
@@ -385,7 +387,8 @@ function normalizeParams(){
   if(!PARAMS.magasins) PARAMS.magasins = [];
   if(!PARAMS.marques) PARAMS.marques = [];
   if(!PARAMS.minstock) PARAMS.minstock = [];
-  if(!PARAMS.zimbraConfig) PARAMS.zimbraConfig = {serverUrl:'https://zimbra.oc-pratique.com', login:''};
+  if(!PARAMS.zimbraConfig) PARAMS.zimbraConfig = {serverUrl:'https://zimbra.oc-pratique.com', login:'', relayUrl:''};
+  if(PARAMS.zimbraConfig.relayUrl===undefined) PARAMS.zimbraConfig.relayUrl = '';
   if(!PARAMS.emailTemplates) PARAMS.emailTemplates = {};
   ['reception','envoi'].forEach(d=>{
     if(!PARAMS.emailTemplates[d]) PARAMS.emailTemplates[d] = {};
@@ -1463,17 +1466,22 @@ function renderEmails(){
 function initZimbraConfigUI(){
   const inpUrl = document.getElementById('zimbraServerUrl');
   const inpLogin = document.getElementById('zimbraLogin');
+  const inpRelay = document.getElementById('zimbraRelayUrl');
   if(!inpUrl) return;
   inpUrl.value = PARAMS.zimbraConfig.serverUrl || '';
   inpLogin.value = PARAMS.zimbraConfig.login || '';
+  inpRelay.value = PARAMS.zimbraConfig.relayUrl || '';
   inpUrl.addEventListener('input', ()=>{ PARAMS.zimbraConfig.serverUrl = inpUrl.value.trim(); saveParams(); });
   inpLogin.addEventListener('input', ()=>{ PARAMS.zimbraConfig.login = inpLogin.value.trim(); saveParams(); });
+  inpRelay.addEventListener('input', ()=>{ PARAMS.zimbraConfig.relayUrl = inpRelay.value.trim(); saveParams(); });
 
   document.getElementById('btnTestZimbra').addEventListener('click', testZimbraConnection);
 }
-async function zimbraAuth(serverUrl, login, password){
-  const base = serverUrl.replace(/\/+$/,'');
-  const res = await fetch(base + '/service/soap', {
+async function zimbraAuth(serverUrl, login, password, relayUrl){
+  const endpoint = relayUrl
+    ? relayUrl.replace(/\/+$/,'') + '/soap'
+    : serverUrl.replace(/\/+$/,'') + '/service/soap';
+  const res = await fetch(endpoint, {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
@@ -1497,6 +1505,7 @@ async function testZimbraConnection(){
   const resultEl = document.getElementById('zimbraTestResult');
   const serverUrl = document.getElementById('zimbraServerUrl').value.trim();
   const login = document.getElementById('zimbraLogin').value.trim();
+  const relayUrl = document.getElementById('zimbraRelayUrl').value.trim();
   const password = document.getElementById('zimbraPassword').value;
   if(!serverUrl || !login || !password){
     resultEl.innerHTML = `<div class="alert-box alert-amber">⚠️ Renseigne l'adresse du serveur, l'identifiant et le mot de passe.</div>`;
@@ -1507,13 +1516,16 @@ async function testZimbraConnection(){
     document.getElementById('zimbraPassword').value = '';
     return;
   }
-  resultEl.innerHTML = `<div class="hint">Connexion en cours...</div>`;
+  resultEl.innerHTML = `<div class="hint">Connexion en cours${relayUrl ? ' (via le relais)' : ''}...</div>`;
   try{
-    await zimbraAuth(serverUrl, login, password);
-    resultEl.innerHTML = `<div class="alert-box" style="border-color:rgba(63,163,77,0.4);background:rgba(63,163,77,0.08);color:#9FE3AC;">✅ Connexion réussie. On peut passer à la construction de l'envoi automatique complet.</div>`;
+    await zimbraAuth(serverUrl, login, password, relayUrl);
+    resultEl.innerHTML = `<div class="alert-box" style="border-color:rgba(63,163,77,0.4);background:rgba(63,163,77,0.08);color:#9FE3AC;">✅ Connexion réussie${relayUrl ? ' via le relais' : ''}. On peut passer à la construction de l'envoi automatique complet.</div>`;
   }catch(err){
     const isNetworkError = err instanceof TypeError;
-    resultEl.innerHTML = `<div class="alert-box alert-red">⛔ ${escapeHtml(err.message)}${isNetworkError ? ' — ceci ressemble à un blocage CORS : le serveur Zimbra n\u2019autorise probablement pas les requêtes depuis cette page. Il faudra passer par un petit relais côté serveur, à voir ensemble.' : ''}</div>`;
+    const hint = relayUrl
+      ? ' — vérifie que le relais est bien déployé, que l\u2019adresse est correcte, et que l\u2019origine autorisée dans le script du Worker correspond exactement à celle de cette page.'
+      : ' — ceci ressemble à un blocage CORS : le serveur Zimbra n\u2019autorise probablement pas les requêtes depuis cette page. Renseigne l\u2019adresse du relais ci-dessus pour contourner ça.';
+    resultEl.innerHTML = `<div class="alert-box alert-red">⛔ ${escapeHtml(err.message)}${isNetworkError ? hint : ''}</div>`;
   }
   document.getElementById('zimbraPassword').value = '';
 }

@@ -401,9 +401,18 @@ function loadParams(){
 function normalizeParams(){
   if(!PARAMS.magasins) PARAMS.magasins = [];
   if(!PARAMS.marques) PARAMS.marques = [];
-  if(!PARAMS.minstock) PARAMS.minstock = [];
-  if(!PARAMS.zimbraConfig) PARAMS.zimbraConfig = {serverUrl:'https://zimbra.oc-pratique.com', login:'', relayUrl:''};
-  if(PARAMS.zimbraConfig.relayUrl===undefined) PARAMS.zimbraConfig.relayUrl = '';
+  if(!PARAMS.minstock || PARAMS.minstock.length === 0) PARAMS.minstock = [
+    {createur:'Filium',       type:'Optique',  seuilRef:'', minDefaut:'60', overrides:{}},
+    {createur:'Filium',       type:'Solaire',  seuilRef:'', minDefaut:'30', overrides:{}},
+    {createur:'Lukkas',       type:'Optique',  seuilRef:'', minDefaut:'60', overrides:{}},
+    {createur:'Lukkas',       type:'Solaire',  seuilRef:'', minDefaut:'50', overrides:{}},
+    {createur:'Level',        type:'Optique',  seuilRef:'', minDefaut:'60', overrides:{}},
+    {createur:'Level',        type:'Solaire',  seuilRef:'', minDefaut:'50', overrides:{}},
+    {createur:'Oscar Version',type:'Optique',  seuilRef:'', minDefaut:'30', overrides:{}},
+    {createur:'Oscar Version',type:'Solaire',  seuilRef:'', minDefaut:'25', overrides:{}}
+  ];
+  if(!PARAMS.zimbraConfig) PARAMS.zimbraConfig = {serverUrl:'https://zimbra.oc-pratique.com', login:'', relayUrl:'https://zimbra-relay.oli-baroukh.workers.dev'};
+  if(PARAMS.zimbraConfig.relayUrl===undefined) PARAMS.zimbraConfig.relayUrl = 'https://zimbra-relay.oli-baroukh.workers.dev';
   if(!PARAMS.emailTemplates) PARAMS.emailTemplates = {};
   ['reception','envoi'].forEach(d=>{
     if(!PARAMS.emailTemplates[d]) PARAMS.emailTemplates[d] = {};
